@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content  %}
+{% comment %} <h1> Hi {{name}} </h1>  
+    <form action = "add", method = 'post'>
+        {% csrf_token %}
+        Enter first number : <input type = "text" name = "num1"></br>
+        Enter second number : <input type = "text" name = "num2"></br>
+        <input type = "submit">
+    </form> {% endcomment %}
+
+
+Cities
+
+{% for stock in stocks %}
+{{stock.symbol}}
+{{stock.company_name}}
+
+</br>
+{% endfor %}
+
+
+{% endblock %}
+
+
