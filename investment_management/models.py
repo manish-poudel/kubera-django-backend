@@ -1,6 +1,7 @@
 from django.db import models
 
-# Create your models here.
+from django.db import models
+
 class Stock(models.Model):
     id = models.AutoField(primary_key=True)
     symbol = models.CharField(max_length=10, unique=True)
@@ -28,3 +29,30 @@ class Stock(models.Model):
 
     def __str__(self):
         return self.symbol
+
+class FinancialData(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    symbol = models.CharField(max_length=10)
+    year = models.DateField()
+    metric_type = models.CharField(max_length=50)
+    metric_value = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'financial_data'
+        unique_together = ('stock', 'symbol', 'year', 'metric_type')
+        verbose_name = 'Financial Data'
+        verbose_name_plural = 'Financial Data'
+
+    def __str__(self):
+        return f"{self.symbol} - {self.year} - {self.metric_type}"
+
+
+    class FinancialData(models.Model):
+        stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+        symbol = models.CharField(max_length=10)
+        year = models.DateField()
+        metric_type = models.CharField(max_length=50)
+        metric_value = models.FloatField(null=True, blank=True)
+
+        class Meta:
+            unique_together = ('stock', 'symbol', 'year', 'metric_type')

@@ -2,39 +2,70 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 from collections import defaultdict
+from django.db.models.functions import Lower
 from django.db.models import Count, Case, When, Value, CharField
+from .fundamentals.roa import ROA
+from .fundamentals.cashflow import CashFlow
+from .fundamentals.roe import ROE
+from .fundamentals.total_revenue import TotalRevenue
+from .fundamentals.total_cash import TotalCash
+from .fundamentals.share_issued import SharedIssued
+from .fundamentals.total_debt import TotalDebt
 
 from investment_management.models import Stock
 
 
-# Create your views here.
-
-# def home(request):
-#     return render(request, 'home.html', {'name': 'Manish'})
-
 
 def home(request):
-    # dest1 = Destination()
-    # dest1.name = "Mumbai"
-    # dest1.desc = "City that never sleeps"
-    # dest1.price = 100
-    # dest1.offer = True
-
-    # dest2 = Destination()
-    # dest2.name = "Hyderabad"
-    # dest2.desc = "Biryani"
-    # dest2.price = 200
-    # dest2.offer = False
-
-    # dest3 = Destination()
-    # dest3.name = "Kathmandu"
-    # dest3.desc = "City of temples"
-    # dest3.price = 400
-    # dest3.offer = True
-
     stocks = Stock.objects.all()
-
     return render(request, 'home.html', {'stocks':stocks})
+
+
+def get_fundamental_data(request, exchange, ftype):
+    try:     
+        fundamental_data = None
+        status = 200
+        symbols = request.GET.get('symbols', None)
+        symbols = symbols.split(',')
+
+        if ftype == "roa":
+            roa = ROA()
+            fundamental_data = roa.get_historical_roa(symbols) 
+
+        elif ftype == "cashflow":
+            cashflow = CashFlow()
+            fundamental_data = cashflow.get_historical_cashflow(symbols=symbols)
+
+        elif ftype == "roe":
+            roe = ROE()
+            fundamental_data = roe.get_historical_roe(symbols=symbols)      
+
+        elif ftype == "totalrevenue":
+            total_revenue = TotalRevenue()
+            fundamental_data = total_revenue.get_historical_totalrevenue(symbols=symbols)      
+
+        elif ftype == "totalcash":
+            total_cash = TotalCash()
+            fundamental_data = total_cash.get_historical_totalcash(symbols=symbols)  
+        
+        elif ftype == "shareissued":
+            share_issued = SharedIssued()
+            fundamental_data = share_issued.get_historical_shareissued(symbols=symbols)   
+
+        elif ftype == "totaldebt":
+            total_debt = TotalDebt()
+            fundamental_data = total_debt.get_historical_totaldebt(symbols=symbols)  
+                  
+        else:
+            fundamental_data = {
+                    "result": "no such fundamental type" } 
+            status = 404   
+        return JsonResponse(fundamental_data, status = status)
+    except Exception as e:
+        print(e)
+        return JsonResponse({
+            "msg": "Something went wrong"
+        }, status = 500)
 
 def sector_stock(request):
     exchange = request.GET.get('exchange', None)
@@ -100,9 +131,9 @@ def stock_detail(request, stock_id):
     except Stock.DoesNotExist:
         return JsonResponse({'error': 'Stock not found'}, status=404)
 
-def group_companies_by_alphabet(request):
-    # Fetch all companies
-    companies = Stock.objects.all()
+def group_companies_by_alphabet(request, exchange):
+    # Fetch companies based on the exchange (assuming there's a field in Stock for exchange)
+    companies = Stock.objects.filter(exchange=exchange.upper())
 
     # Group companies by the first letter of their name
     grouped_companies = {}
@@ -113,22 +144,22 @@ def group_companies_by_alphabet(request):
             if first_letter not in grouped_companies:
                 grouped_companies[first_letter] = []
             grouped_companies[first_letter].append({
-            'id': company.id,  
-            'symbol': company.symbol,
-            'name': name
-        })
+                'id': company.id,
+                'symbol': company.symbol,
+                'name': name
+            })
 
     # Convert the dictionary to a sorted list of tuples
     sorted_grouped_companies = dict(sorted(grouped_companies.items()))
 
     return JsonResponse(sorted_grouped_companies)
 
-def company_stats(request):
+def company_stats(request, exchange):
     # Annotate sector_display to convert 'n/a' to 'Others'
-    adjusted_sector_counts = Stock.objects.annotate(
+    adjusted_sector_counts = Stock.objects.filter(exchange=exchange.upper()).annotate(
         adjusted_sector_display=Case(
             When(sector_display__iexact='n/a', then=Value('Others')),
-            default='sector_display',
+            default=Lower('sector_display'),
             output_field=CharField()
         )
     ).values('adjusted_sector_display').annotate(
@@ -147,6 +178,11 @@ def company_stats(request):
     }
 
     return JsonResponse(data)
+
+
+
+
+
 def add(request):
     val1 = int(request.POST['num1'])
     val2 = int(request.POST['num2'])
