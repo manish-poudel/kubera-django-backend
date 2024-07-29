@@ -1,4 +1,4 @@
-from ..models import FinancialData
+from ...models import FinancialData
 from .utilities import Utilities
 
 class TotalRevenue:

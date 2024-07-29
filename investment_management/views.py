@@ -4,13 +4,13 @@ from django.shortcuts import render
 from collections import defaultdict
 from django.db.models.functions import Lower
 from django.db.models import Count, Case, When, Value, CharField
-from .fundamentals.roa import ROA
-from .fundamentals.cashflow import CashFlow
-from .fundamentals.roe import ROE
-from .fundamentals.total_revenue import TotalRevenue
-from .fundamentals.total_cash import TotalCash
-from .fundamentals.share_issued import SharedIssued
-from .fundamentals.total_debt import TotalDebt
+from .database_services.fundamentals.roa import ROA
+from .database_services.fundamentals.cashflow import CashFlow
+from .database_services.fundamentals.roe import ROE
+from .database_services.fundamentals.total_revenue import TotalRevenue
+from .database_services.fundamentals.total_cash import TotalCash
+from .database_services.fundamentals.share_issued import SharedIssued
+from .database_services.fundamentals.total_debt import TotalDebt
 
 from investment_management.models import Stock
 
@@ -19,6 +19,9 @@ from investment_management.models import Stock
 def home(request):
     stocks = Stock.objects.all()
     return render(request, 'home.html', {'stocks':stocks})
+
+
+
 
 
 def get_fundamental_data(request, exchange, ftype):

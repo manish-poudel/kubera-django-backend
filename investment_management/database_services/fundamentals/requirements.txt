@@ -1,0 +1,2 @@
+net profit margin = net_income 
+earning per share
