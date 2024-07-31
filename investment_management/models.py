@@ -56,3 +56,27 @@ class FinancialData(models.Model):
 
         class Meta:
             unique_together = ('stock', 'symbol', 'year', 'metric_type')
+
+
+class CompanyOfficer(models.Model):
+    id = models.AutoField(primary_key=True)
+    stock = models.ForeignKey('Stock', on_delete=models.CASCADE)
+    symbol = models.CharField(max_length=10)
+    name = models.CharField(max_length=255)
+    age = models.IntegerField(null=True, blank=True)
+    title = models.CharField(max_length=100, null=True, blank=True)
+    year_born = models.IntegerField(null=True, blank=True)
+    exercised_value = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    unexercised_value = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    total_pay = models.IntegerField(null=True, blank=True)
+    fiscal_year = models.IntegerField(null=True, blank=True)
+    max_age = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'company_officer'
+        constraints = [
+            models.CheckConstraint(check=models.Q(id__gte=0), name='company_officer_id_gte_0')
+        ]
+
+    def __str__(self):
+        return self.name

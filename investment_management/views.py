@@ -4,16 +4,19 @@ from django.shortcuts import render
 from collections import defaultdict
 from django.db.models.functions import Lower
 from django.db.models import Count, Case, When, Value, CharField
-from .database_services.fundamentals.roa import ROA
-from .database_services.fundamentals.cashflow import CashFlow
-from .database_services.fundamentals.roe import ROE
-from .database_services.fundamentals.total_revenue import TotalRevenue
-from .database_services.fundamentals.total_cash import TotalCash
-from .database_services.fundamentals.share_issued import SharedIssued
-from .database_services.fundamentals.total_debt import TotalDebt
+
+from investment_management.database_services.financial_data.eps import EPS
+from investment_management.database_services.financial_data.npm import NPM
+from .database_services.financial_data.roa import ROA
+from .database_services.financial_data.cashflow import CashFlow
+from .database_services.financial_data.roe import ROE
+from .database_services.financial_data.total_revenue import TotalRevenue
+from .database_services.financial_data.total_cash import TotalCash
+from .database_services.financial_data.share_issued import SharedIssued
+from .database_services.financial_data.total_debt import TotalDebt
+from .database_services.stock.company_details import CompanyDetails
 
 from investment_management.models import Stock
-
 
 
 def home(request):
@@ -21,6 +24,14 @@ def home(request):
     return render(request, 'home.html', {'stocks':stocks})
 
 
+def get_company_details(request, exchange, stock_id):
+    try:
+        company_details_services = CompanyDetails()
+        return company_details_services.get_company_details(stock_id=stock_id)
+    except:
+        return JsonResponse({
+            "msg": "Something went wrong"
+        }, status = 500)
 
 
 
@@ -38,6 +49,14 @@ def get_fundamental_data(request, exchange, ftype):
         elif ftype == "cashflow":
             cashflow = CashFlow()
             fundamental_data = cashflow.get_historical_cashflow(symbols=symbols)
+
+        elif ftype == "eps":
+            eps = EPS()
+            fundamental_data = eps.get_historical_eps(symbols=symbols)   
+
+        elif ftype == "npm":
+            npm = NPM()
+            fundamental_data = npm.get_historical_npm(symbols=symbols)   
 
         elif ftype == "roe":
             roe = ROE()

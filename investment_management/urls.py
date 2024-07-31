@@ -9,5 +9,6 @@ urlpatterns = [
     path('stock/<str:exchange>/group/alphabet', views.group_companies_by_alphabet, name='group_companies_by_alphabet'),
     path('stock/<str:exchange>/stats', views.company_stats, name='company_stats'),
     path('stock/<str:exchange>/fundamentals/historical/<str:ftype>', views.get_fundamental_data, name='get_fundamental_data'),
+    path('stock/<str:exchange>/company/<int:stock_id>', views.get_company_details, name = 'get_company_details'),
     path('add', views.add, name='add'),
 ]
