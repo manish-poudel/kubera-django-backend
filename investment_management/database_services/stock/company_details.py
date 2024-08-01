@@ -1,14 +1,27 @@
 
 
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from investment_management.models import CompanyOfficer, Stock
 
 
 class CompanyDetails:
 
-    def get_company_details(self, stock_id):
-        stock = Stock.objects.get(id = stock_id)
 
+    def get_stock_data(self,searchvalue):
+        try:
+            # Try to convert searchvalue to an integer
+            search_id = int(searchvalue)
+            # If conversion is successful, search by id
+            return Stock.objects.get(id=search_id)
+        except:
+            print("")
+            return Stock.objects.get(symbol=searchvalue)
+
+            
+    def get_company_details(self, value):
+        print("Getting company details..." + value)
+        stock = self.get_stock_data(value)
+        print(stock)
         # Get stock data
         stock_data = {
             'id': stock.id,
@@ -28,7 +41,7 @@ class CompanyDetails:
         }
 
         # Get employee data
-        employees = CompanyOfficer.objects.filter(stock_id = stock_id)
+        employees = CompanyOfficer.objects.filter(stock_id = stock.id)
         employees_list = []
         for employee in employees:
             employees_list.append({
@@ -38,3 +51,5 @@ class CompanyDetails:
 
         stock_data['employees'] = employees_list
         return JsonResponse(stock_data)
+      
+

@@ -24,15 +24,14 @@ def home(request):
     return render(request, 'home.html', {'stocks':stocks})
 
 
-def get_company_details(request, exchange, stock_id):
+def get_company_details(request, exchange, searchvalue):
     try:
         company_details_services = CompanyDetails()
-        return company_details_services.get_company_details(stock_id=stock_id)
+        return company_details_services.get_company_details(value=searchvalue)
     except:
         return JsonResponse({
             "msg": "Something went wrong"
         }, status = 500)
-
 
 
 def get_fundamental_data(request, exchange, ftype):
