@@ -80,3 +80,22 @@ class CompanyOfficer(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+
+class Message(models.Model):
+    id = models.AutoField(primary_key=True)
+    email_id = models.EmailField(max_length=255)
+    message = models.TextField()
+    created_time = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'message'  # Ensure this matches your actual table name in the database
+        verbose_name = 'Message'
+        verbose_name_plural = 'Messages'
+        constraints = [
+            models.CheckConstraint(check=models.Q(email_id__isnull=False), name='email_id_not_null')
+        ]
+
+    def __str__(self):
+        return f"Message from {self.email_id} at {self.created_time}"

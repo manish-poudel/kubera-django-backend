@@ -10,5 +10,7 @@ urlpatterns = [
     path('stock/<str:exchange>/stats', views.company_stats, name='company_stats'),
     path('stock/<str:exchange>/fundamentals/historical/<str:ftype>', views.get_fundamental_data, name='get_fundamental_data'),
     path('stock/<str:exchange>/company/<str:searchvalue>', views.get_company_details, name = 'get_company_details'),
+    path('message', views.post_message, name = 'post_message'),
+    path('csrf-token/', views.get_csrf_token, name='get_csrf_token'),
     path('add', views.add, name='add'),
 ]

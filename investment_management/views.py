@@ -1,9 +1,11 @@
 
-from django.http import JsonResponse
+import json
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from collections import defaultdict
 from django.db.models.functions import Lower
 from django.db.models import Count, Case, When, Value, CharField
+from django.middleware.csrf import get_token
 
 from investment_management.database_services.financial_data.eps import EPS
 from investment_management.database_services.financial_data.npm import NPM
@@ -17,6 +19,8 @@ from .database_services.financial_data.total_debt import TotalDebt
 from .database_services.stock.company_details import CompanyDetails
 
 from investment_management.models import Stock
+
+from .database_services.messages.message import MessageService
 
 
 def home(request):
@@ -33,6 +37,29 @@ def get_company_details(request, exchange, searchvalue):
             "msg": "Something went wrong"
         }, status = 500)
 
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token})
+
+def post_message(request):
+    if request.method == 'POST':
+
+        print("getting message")
+            # Parse JSON data from request body
+        data = json.loads(request.body)
+        email_id = data.get('email_id')
+        message_text = data.get('message')
+
+        print(email_id)
+        print(message_text)
+        
+        message_service = MessageService()
+        message_service.post_message(email_id, message_text)
+
+        return HttpResponse("Message posted successfully!", status = 200)
+    else:
+        return HttpResponse("Invalid request method.", status=400)
+    
 
 def get_fundamental_data(request, exchange, ftype):
     try:     
