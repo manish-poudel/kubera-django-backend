@@ -1,19 +1,26 @@
 
-from django.http import JsonResponse
+import json
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from collections import defaultdict
 from django.db.models.functions import Lower
 from django.db.models import Count, Case, When, Value, CharField
-from .database_services.fundamentals.roa import ROA
-from .database_services.fundamentals.cashflow import CashFlow
-from .database_services.fundamentals.roe import ROE
-from .database_services.fundamentals.total_revenue import TotalRevenue
-from .database_services.fundamentals.total_cash import TotalCash
-from .database_services.fundamentals.share_issued import SharedIssued
-from .database_services.fundamentals.total_debt import TotalDebt
+from django.middleware.csrf import get_token
+
+from investment_management.database_services.financial_data.eps import EPS
+from investment_management.database_services.financial_data.npm import NPM
+from .database_services.financial_data.roa import ROA
+from .database_services.financial_data.cashflow import CashFlow
+from .database_services.financial_data.roe import ROE
+from .database_services.financial_data.total_revenue import TotalRevenue
+from .database_services.financial_data.total_cash import TotalCash
+from .database_services.financial_data.share_issued import SharedIssued
+from .database_services.financial_data.total_debt import TotalDebt
+from .database_services.stock.company_details import CompanyDetails
 
 from investment_management.models import Stock
 
+from .database_services.messages.message import MessageService
 
 
 def home(request):
@@ -21,8 +28,38 @@ def home(request):
     return render(request, 'home.html', {'stocks':stocks})
 
 
+def get_company_details(request, exchange, searchvalue):
+    try:
+        company_details_services = CompanyDetails()
+        return company_details_services.get_company_details(value=searchvalue)
+    except:
+        return JsonResponse({
+            "msg": "Something went wrong"
+        }, status = 500)
 
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token})
 
+def post_message(request):
+    if request.method == 'POST':
+
+        print("getting message")
+            # Parse JSON data from request body
+        data = json.loads(request.body)
+        email_id = data.get('email_id')
+        message_text = data.get('message')
+
+        print(email_id)
+        print(message_text)
+        
+        message_service = MessageService()
+        message_service.post_message(email_id, message_text)
+
+        return HttpResponse("Message posted successfully!", status = 200)
+    else:
+        return HttpResponse("Invalid request method.", status=400)
+    
 
 def get_fundamental_data(request, exchange, ftype):
     try:     
@@ -38,6 +75,14 @@ def get_fundamental_data(request, exchange, ftype):
         elif ftype == "cashflow":
             cashflow = CashFlow()
             fundamental_data = cashflow.get_historical_cashflow(symbols=symbols)
+
+        elif ftype == "eps":
+            eps = EPS()
+            fundamental_data = eps.get_historical_eps(symbols=symbols)   
+
+        elif ftype == "npm":
+            npm = NPM()
+            fundamental_data = npm.get_historical_npm(symbols=symbols)   
 
         elif ftype == "roe":
             roe = ROE()
