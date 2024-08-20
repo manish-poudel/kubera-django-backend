@@ -90,10 +90,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'kubera',
-        'USER': 'postgres',
-        'PASSWORD': 'letme!n',
-        'HOST': 'localhost',
-        'PORT': 5433
+        'USER': 'omekus',
+        'PASSWORD': 'letme!n2thisW0rld',
+        'HOST': 'omekus-kubera.c9k2q6og22ft.ap-southeast-2.rds.amazonaws.com',
+        'PORT': 5432
     }
 }
 
